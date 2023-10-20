@@ -4,15 +4,14 @@ const Keyboard = ({ guessedLetters, onLetterClick, gameResult }) => {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   return (
-    <div className="keyboard" style={{ marginTop: "20px" }}>
-      {alphabet.split("").map((letter) => (
+    <div className="keyboard">
+      {alphabet.split("").map((letter, index) => (
         <button
-          key={letter}
-          className={`keyboard-letter ${
-            guessedLetters.includes(letter) ? "inactive" : ""
-          } ${gameResult ? "disabled" : ""}`}
+          key={index}
+          className={`keyboard-letter ${gameResult ? "inactive" :
+            guessedLetters.includes(letter) ? "active" : "inactive"}`}
           onClick={() => onLetterClick(letter)}
-          disabled={guessedLetters.includes(letter) || gameResult}
+          disabled={gameResult}
         >
           {letter}
         </button>

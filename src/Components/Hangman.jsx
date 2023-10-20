@@ -1,16 +1,38 @@
 import React from "react";
 
-const Hangman = ({ hangmanState }) => {
-  const hangmanStates = [
-    // Add your hangman figure states as CSS classes
+function Hangman({ hangmanState }) {
+  const hangmanParts = [
+    "base",
+    "pole-upright",
+    "top",
+    "pole-down",
+  ];
+
+  const personParts = [
+    "person-head",
+    "person-body",
+    "person-right-arm",
+    "person-left-arm",
+    "person-right-leg",
+    "person-left-leg",
   ];
 
   return (
-    <div className="col-12">
-      {/* Display the appropriate hangman state based on hangmanState */}
-      <div className={`drawing ${hangmanStates[hangmanState]}`} />
+    <div className="drawing">
+      {hangmanParts.map((part, index) => (
+        <div
+          key={index}
+          className={`${part} ${index <= hangmanState ? "active" : ""}`}
+        ></div>
+      ))}
+      {personParts.map((part, index) => (
+        <div
+          key={index}
+          className={`${part} ${index === hangmanState - hangmanParts.length ? "active" : ""}`}
+        ></div>
+      ))}
     </div>
   );
-};
+}
 
 export default Hangman;

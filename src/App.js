@@ -1,10 +1,12 @@
-import React, {Component} from "react";
+import React from "react";
 import { useEffect, useState } from "react";
 import ScoreCard from "./Components/ScoreCard";
 import Hangman from "./Components/Hangman";
 import WordDisplay from "./Components/WordDisplay";
 import Keyboard from "./Components/Keyboard";
 import GetRandomWord from "./Utilities/WordGenerator";
+import * as HangmanLogic from "./Utilities/HangmanLogic";
+import RestartButton from "./Components/RestartButton";
 
 function App() {
   const [state, setState] = useState({
@@ -17,78 +19,44 @@ function App() {
   });
 
   useEffect(() => {
-    GetRandomWord().then((wordToGuess) => {
+    const fetchData = async () => {
+      const wordToGuess = await GetRandomWord();
       setState((prevState) => ({
         ...prevState,
         wordToGuess,
+        hangmanState: 0, //Reset hangman state when fetching a new word
+        gameResult: null, //Reset game result
       }));
-    });
-  }, []);
+    };
+
+    if (state.wordToGuess === null) {
+      fetchData();
+    }
+  }, [state.wordToGuess]);
 
   const handleLetterGuess = (letter) => {
-    const { wordToGuess, guessedLetters, hangmanState } = state;
-
-    //Check if the letter hasn't been guessed already
-    if (!guessedLetters.includes(letter)) {
-      const newGuessedLetters = [...guessedLetters, letter];
-
-      //Check if the letter is in the word
-      if (!wordToGuess.includes(letter)) {
-        setState((prevState) => ({
-          ...prevState,
-          guessedLetters: newGuessedLetters,
-          hangmanState: hangmanState + 1,
-        }));
-      }
-
-      //Check if the game is won or lost
-      const isWordGuessed = wordToGuess.split("").every((char) =>
-        newGuessedLetters.includes(char)
-      );
-
-      if (isWordGuessed) {
-        setState((prevState) => ({
-          ...prevState,
-          gameResult: "win",
-          wins: prevState.wins + 1,
-        }));
-      } else if (hangmanState === 6) {
-        setState((prevState) => ({
-          ...prevState,
-          gameResult: "lose",
-          losses: prevState.losses + 1,
-        }));
-      }
-    }
+    const newState = HangmanLogic.handleLetterGuess(state, letter);
+    setState(newState);
   };
 
-    const {
-      wordToGuess,
-      guessedLetters,
-      hangmanState,
-      wins,
-      losses,
-      gameResult,
-    } = state;
-
-    return (
-      <div className="container-fluid">
-        <div className="row">
-          <ScoreCard wins={wins} losses={losses} />
-          <div className="col-4">
-            <h1 className="title">Word Guess</h1>
-          </div>
-          <div className="col-4"></div>
-        </div>
-        <Hangman hangmanState={hangmanState} />
-        <WordDisplay word={wordToGuess} guessedLetters={guessedLetters} />
-        <Keyboard
-          guessedLetters={guessedLetters}
-          onLetterClick={handleLetterGuess}
-          gameResult={gameResult}
-        />
-      </div>
-    );
+  const handleRestart = () => {
+    const newState = HangmanLogic.restartGame(state);
+    setState(newState);
   }
+
+  return (
+    <div className="container-fluid">
+      <ScoreCard wins={state.wins} losses={state.losses} />
+      <Hangman hangmanState={state.hangmanState} />
+      <WordDisplay word={state.wordToGuess} guessedLetters={state.guessedLetters} />
+      <Keyboard
+        guessedLetters={state.guessedLetters}
+        onLetterClick={handleLetterGuess}
+        gameResult={state.gameResult}
+      />
+      {state.gameResult && <RestartButton onRestart={handleRestart} />}
+    </div>
+  );
+}
 
 export default App;
